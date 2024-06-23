@@ -16,7 +16,7 @@ public class CargaDeDatos {
     public void cargaSongs(MyHashImpl<String, Song> songs, MyHashImpl<String,Artist> artists, MyHashImpl<String, Country> countrys) throws IOException {
         long tiempoInicio = System.currentTimeMillis();
         long memoriaInicio = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        String songsFile = "C:\\Users\\59892\\OneDrive\\Desktop\\universal_top_spotify_songs.csv";
+        String songsFile = "D:\\Administrador\\Desktop\\universal_top_spotify_songs.csv";
 
         try  {
             BufferedReader br = new BufferedReader(new FileReader(songsFile));

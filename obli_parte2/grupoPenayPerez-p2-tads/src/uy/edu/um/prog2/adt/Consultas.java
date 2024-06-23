@@ -7,9 +7,7 @@ import uy.edu.um.prog2.adt.LinkedList.MyList;
 
 import java.time.LocalDate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -46,58 +44,41 @@ public class Consultas {
 
 
     public List<String> consulta2(LocalDate date, MyHashImpl<String, Song> songs) {
-        SearchBinaryTreeImpl<Song> songTree = new SearchBinaryTreeImpl<>();
+        long tiempoInicio = System.currentTimeMillis();
+        long memoriaInicio = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        // Agrega todas las canciones al árbol binario
-        for (Song song : songs.values()) {
-            songTree.add(song);
-        }
-
-        // Filtra las canciones que se ajustan a la fecha específica
-        List<Song> filteredSongs = songTree.inOrder().stream()
+        List<Song> filteredSongs = songs.values().stream()
                 .filter(song -> song.getDate().isEqual(date))
                 .collect(Collectors.toList());
 
-        // Crea un mapa para contar la frecuencia de cada canción
-        MyHashImpl<String, Integer> songFrequency = new MyHashImpl<>();
+        Map<String, Integer> songFrequency = new HashMap<>();
         for (Song song : filteredSongs) {
-            String title = song.getTitle();
-            if (songFrequency.containsKey(title)) {
-                songFrequency.put(title, songFrequency.get(title) + 1);
-            } else {
-                songFrequency.put(title, 1);
+            songFrequency.put(song.getTitle(), songFrequency.getOrDefault(song.getTitle(), 0) + 1);
+        }
+
+        PriorityQueue<Map.Entry<String, Integer>> topSongs = new PriorityQueue<>(
+                Map.Entry.comparingByValue());
+
+        for (Map.Entry<String, Integer> entry : songFrequency.entrySet()) {
+            topSongs.offer(entry);
+            if (topSongs.size() > 5) {
+                topSongs.poll();
             }
         }
 
-        // Ordena las canciones por frecuencia de aparición
-        List<String> sortedSongs = new ArrayList<>();
-        List<Integer> frequencies = new ArrayList<>();
-
-// Iteramos sobre el mapa songFrequency
-        for (String key : songFrequency.keys()) {
-            int value = songFrequency.get(key);
-            // Buscamos la posición adecuada para insertar la canción en la lista ordenada
-            int i = 0;
-            while (i < frequencies.size() && frequencies.get(i) > value) {
-                i++;
-            }
-            frequencies.add(i, value);
-            sortedSongs.add(i, key);
-        }
-
-// Seleccionamos las top 5 canciones
         List<String> top5Songs = new ArrayList<>();
-        for (int i = 0; i < 5 && i < sortedSongs.size(); i++) {
-            top5Songs.add(sortedSongs.get(i));
+        while (!topSongs.isEmpty()) {
+            top5Songs.add(topSongs.poll().getKey());
         }
 
-        // Selecciona las top 5 canciones
-        List<String> top5SongsFinal = new ArrayList<>();
-        for (int i = 0; i < 5 && i < sortedSongs.size(); i++) {
-            top5SongsFinal.add(sortedSongs.get(i));
-        }
-
-        return top5SongsFinal;
+        Collections.reverse(top5Songs);
+        long tiempoFin = System.currentTimeMillis();
+        long tiempo = tiempoFin - tiempoInicio;
+        long memoriaFin = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long memoriaUsada = memoriaFin - memoriaInicio;
+        System.out.print("Tiempo de ejecucion de la consulta: " + (tiempoFin - tiempoInicio) + " ms\n");
+        System.out.print("Memoria usada por la consulta: " + memoriaUsada + " bytes\n");
+        return top5Songs;
     }
 
     public MyLinkedListImpl<String> consulta3(MyHashImpl<String,Artist> artists, MyHashImpl<String,Country> countries, LocalDate mindate, LocalDate maxdate){
@@ -167,6 +148,8 @@ public class Consultas {
 
 
 
+
+
     public int consulta4(String artistname, LocalDate date, MyHashImpl<String, Country> countries, MyHashImpl<String,Artist> artistas){
         long tiempoInicio = System.currentTimeMillis();
         long memoriaInicio = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -201,21 +184,23 @@ public class Consultas {
     public int consulta5(MyHashImpl<String, Song> songs, double minTempo, double maxTempo, LocalDate minDate, LocalDate maxDate) {
         long tiempoInicio = System.currentTimeMillis();
         long memoriaInicio = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
         int count = 0;
-        for (int i = 0; i < songs.values().size(); i++) {
-            Song song = songs.values().get(i);
-            if (song.getTempo() >= minTempo && song.getTempo() <= maxTempo && song.getDate().isAfter(minDate) && song.getDate().isBefore(maxDate)){
+        for (Song song : songs.values()) {
+            if (song.getTempo() >= minTempo && song.getTempo() <= maxTempo
+                    && song.getDate().isAfter(minDate) && song.getDate().isBefore(maxDate)) {
                 count++;
             }
         }
         long tiempoFin = System.currentTimeMillis();
-        long tiempo = tiempoFin - tiempoInicio;
         long memoriaFin = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long memoriaUsada = memoriaFin - memoriaInicio;
         System.out.print("Tiempo de ejecucion de la consulta: " + (tiempoFin - tiempoInicio) + " ms\n");
         System.out.print("Memoria usada por la consulta: " + memoriaUsada + " bytes\n");
         return count;
     }
+
+
 
     public static List<Integer> ordenarMenAMayor(List<Integer> listaAOrdenar) {
         List<Integer> listaOrdenada = new ArrayList<>();
